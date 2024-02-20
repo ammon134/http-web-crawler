@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "npx tsc --w",
-    "start": "npx tsc && ts-node ./src/main.ts",
+    "start": "ts-node ./src/main.ts",
     "test": "jest"
   },
   "author": "",
@@ -20,5 +20,17 @@
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
+  },
+  "eslintConfig": {
+    "overrides": [
+      {
+        "files": [
+          "tests/**/*"
+        ],
+        "env": {
+          "jest": true
+        }
+      }
+    ]
   }
 }
