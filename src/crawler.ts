@@ -4,6 +4,17 @@ export const normalizeURL = (url: string): string => {
 import { JSDOM } from "jsdom";
 
 
+export const getURLObject = (url: string | URL): URL => {
+  if (typeof url == "string") {
+    try {
+      return new URL(url);
+    } catch {
+      throw new Error("Error converting url to object.");
+    }
+  } else {
+    return url;
+  }
+};
 
 export const getURLsFromHTML = (
   html: string,
@@ -29,9 +40,19 @@ export const getURLsFromHTML = (
   return URLs;
 };
 
+export const normalizeURL = (url: string | URL): string => {
+  let urlObj: URL;
+  if (typeof url == "string") {
+    try {
+      urlObj = new URL(url);
+    } catch (err: any) {
+      console.log(`${err.message}`);
+      return "";
+    }
+  } else {
+    urlObj = url;
   }
-  const urlObj = new URL(url);
-  let fullpath = `${urlObj.hostname}${urlObj.pathname}`;
+  let fullpath = `http://${urlObj.hostname}${urlObj.pathname}`;
   if (fullpath.endsWith("/")) {
     fullpath = fullpath.slice(0, fullpath.length - 1);
   }

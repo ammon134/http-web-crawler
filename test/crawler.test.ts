@@ -1,6 +1,6 @@
-import { normalizeURL } from "../src/crawler.ts";
+import { getURLsFromHTML, normalizeURL, getURLObject } from "../src/crawler.ts";
 
-const expected_full_path = "blog.boot.dev/path";
+const expected_full_path = "http://blog.boot.dev/path";
 const host_path_urls = [
   "https://blog.boot.dev/path/",
   "https://blog.boot.dev/path",
@@ -65,3 +65,29 @@ test("HTML returns correct list of URLs", () => {
   expect(getURLsFromHTML(HTMLString, baseURL)).toEqual(expectedURLs);
 });
 
+// getURLObject
+
+test("get URL Object correctly", () => {
+  const inputURLs: (string | URL)[] = [
+    "https://wagslane.dev",
+    new URL("https://samthor.au/about/"),
+    new URL("https://twitter.com/ChromiumDev"),
+  ];
+  const expectedURLs = [
+    new URL("https://wagslane.dev"),
+    new URL("https://samthor.au/about/"),
+    new URL("https://twitter.com/ChromiumDev"),
+  ];
+  let resultURLs: (string | URL)[] = [];
+  for (let url of inputURLs) {
+    resultURLs.push(getURLObject(url));
+  }
+  expect(expectedURLs).toEqual(resultURLs);
+});
+
+test("getURLObject - reject invalid URL", () => {
+  const inputURL = "/learn/testing";
+  expect(() => getURLObject(inputURL)).toThrow(
+    "Error converting url to object.",
+  );
+});
