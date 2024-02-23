@@ -1,8 +1,59 @@
-export const normalizeURL = (url: string): string => {
-  if (!URL.canParse(url)) {
-    return "";
 import { JSDOM } from "jsdom";
 
+export type TPages = {
+  [key: string]: number;
+};
+
+export const crawlPage = async (
+  currentURL: string | URL,
+  pages: TPages,
+): Promise<TPages> => {
+  // Normalize currentURLObj
+  const currentURLObj = getURLObject(normalizeURL(currentURL));
+  // If it exists in the pages, increment count
+  // Otherwise add it to pages
+  if (pages[currentURLObj.toString()]) {
+    pages[currentURLObj.toString()] += 1;
+    return pages;
+  } else {
+    pages[currentURLObj.toString()] = 1;
+  }
+  // Print currentURL
+  console.log(`Crawling ${currentURLObj.toString()}...`);
+
+  try {
+    // Fetch it and get a list of URLs
+    const res = await fetch(currentURLObj, {
+      method: "GET",
+    });
+    if (!res.ok) {
+      console.log("HTTP fetch error.");
+      return pages;
+    }
+    const contentType = res.headers.get("content-type");
+    if (!contentType?.includes("text/html")) {
+      console.log(`Response is not text/html. It's ${contentType}`);
+      return pages;
+    }
+    const HTMLBody = await res.text();
+    const urlList = getURLsFromHTML(HTMLBody, currentURLObj);
+
+    // Filter this list to have list of URLs with specified baseURL
+    const filteredUrlList = urlList.filter((aString) => {
+      const tmpURLObj = new URL(aString);
+      return tmpURLObj.hostname == currentURLObj.hostname;
+    });
+
+    // Call crawlPage on each URL of this list
+    for (let url of filteredUrlList) {
+      pages = await crawlPage(url, pages);
+    }
+  } catch (err: any) {
+    console.log(`Fetch error: ${err.message}`);
+  }
+  // Return pages
+  return pages;
+};
 
 export const getURLObject = (url: string | URL): URL => {
   if (typeof url == "string") {
